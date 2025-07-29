@@ -24,6 +24,7 @@ type Product struct {
 
 var productList []Product
 
+// GET /products endpoint to retrieve products
 func getProducts(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Content-Type", "application/json")
@@ -34,11 +35,35 @@ func getProducts(w http.ResponseWriter, r *http.Request) {
 	encoder := json.NewEncoder(w)
 	encoder.Encode(productList)
 }
+
+// POST /products endpoint to create a new product
+func createProduct(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Content-Type", "application/json")
+	if r.Method != "POST" {
+		http.Error(w, "Please give me a POST request", 400)
+		return
+	}
+
+	var newProduct Product
+	err := json.NewDecoder(r.Body).Decode(&newProduct)
+	if err != nil {
+		http.Error(w, "Invalid product data", 400)
+		return
+	}
+
+	newProduct.ID = len(productList) + 1
+	productList = append(productList, newProduct)
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(newProduct)
+}
+
 func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/hello", helloHandler)
 	mux.HandleFunc("/about", aboutHandler)
 	mux.HandleFunc("/products", getProducts)
+	mux.HandleFunc("/create-product", createProduct)
 
 	fmt.Println("Server running on port 3000")
 
