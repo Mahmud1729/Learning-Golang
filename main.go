@@ -26,27 +26,23 @@ var productList []Product
 
 // GET /products endpoint to retrieve products
 func getProducts(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-type, Mahmud")
-
-	if r.Method == "OPTIONS" {
-		w.WriteHeader(200)
-		return
-	}
+	handleCors(w)
+	handlePreFlight(w, r)
 
 	if r.Method != "GET" {
 		http.Error(w, "Please give me a GET request", 400)
 		return
 	}
-	encoder := json.NewEncoder(w)
-	encoder.Encode(productList)
+	// encoder := json.NewEncoder(w)
+	// encoder.Encode(productList)
+	sendData(w, productList, 200)
 }
 
 // POST /products endpoint to create a new product
 func createProduct(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Content-Type", "application/json")
+	handleCors(w)
+	handlePreFlight(w, r)
+
 	if r.Method != "POST" {
 		http.Error(w, "Please give me a POST request", 400)
 		return
@@ -63,6 +59,31 @@ func createProduct(w http.ResponseWriter, r *http.Request) {
 	productList = append(productList, newProduct)
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(newProduct)
+
+	// w.WriteHeader(201)
+	// encoder := json.NewEncoder(w)
+	// encoder.Encode(newProduct)
+	sendData(w, newProduct, 201)
+}
+
+func handleCors(w http.ResponseWriter) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-type, Mahmud")
+}
+
+func handlePreFlight(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(200)
+		return
+	}
+}
+
+func sendData(w http.ResponseWriter, data interface{}, statusCode int) {
+	w.WriteHeader(statusCode)
+	encoder := json.NewEncoder(w)
+	encoder.Encode(data)
 }
 
 func main() {
