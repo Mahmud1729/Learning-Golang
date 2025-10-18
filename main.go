@@ -29,12 +29,15 @@ func getProducts(w http.ResponseWriter, r *http.Request) {
 	handleCors(w)
 	handlePreFlight(w, r)
 
-	if r.Method != "GET" {
-		http.Error(w, "Please give me a GET request", 400)
+	// if r.Method != "GET" {
+	// 	http.Error(w, "Please give me a GET request", 400)
+	// 	return
+	// }
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(200)
 		return
 	}
-	// encoder := json.NewEncoder(w)
-	// encoder.Encode(productList)
+
 	sendData(w, productList, 200)
 }
 
@@ -43,8 +46,12 @@ func createProduct(w http.ResponseWriter, r *http.Request) {
 	handleCors(w)
 	handlePreFlight(w, r)
 
-	if r.Method != "POST" {
-		http.Error(w, "Please give me a POST request", 400)
+	// if r.Method != "POST" {
+	// 	http.Error(w, "Please give me a POST request", 400)
+	// 	return
+	// }
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(200)
 		return
 	}
 
@@ -60,9 +67,6 @@ func createProduct(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(newProduct)
 
-	// w.WriteHeader(201)
-	// encoder := json.NewEncoder(w)
-	// encoder.Encode(newProduct)
 	sendData(w, newProduct, 201)
 }
 
@@ -88,10 +92,13 @@ func sendData(w http.ResponseWriter, data interface{}, statusCode int) {
 
 func main() {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/hello", helloHandler)
-	mux.HandleFunc("/about", aboutHandler)
-	mux.HandleFunc("/products", getProducts)
-	mux.HandleFunc("/create-product", createProduct)
+	mux.Handle("GET /hello", http.HandlerFunc(helloHandler))
+	mux.Handle("GET /about", http.HandlerFunc(aboutHandler))
+	mux.Handle("GET /products", http.HandlerFunc(getProducts))
+	mux.Handle("OPTIONS /products", http.HandlerFunc(getProducts))
+
+	mux.Handle("POST /create-product", http.HandlerFunc(createProduct))
+	mux.Handle("OPTIONS /create-product", http.HandlerFunc(createProduct))
 
 	fmt.Println("Server running on port 3000")
 
