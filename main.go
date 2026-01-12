@@ -94,7 +94,8 @@ func main() {
 	mux := http.NewServeMux()
 	mux.Handle("GET /hello", http.HandlerFunc(helloHandler))
 	mux.Handle("GET /about", http.HandlerFunc(aboutHandler))
-	mux.Handle("GET /products", http.HandlerFunc(getProducts))
+	// mux.Handle("GET /products", http.HandlerFunc(getProducts))
+	mux.Handle("GET /products", corsMiddleware(http.HandlerFunc(getProducts)))
 	mux.Handle("OPTIONS /products", http.HandlerFunc(getProducts))
 
 	mux.Handle("POST /create-product", http.HandlerFunc(createProduct))
@@ -134,4 +135,18 @@ func init() {
 	productList = append(productList, prod1)
 	productList = append(productList, prod2)
 	productList = append(productList, prod3)
+}
+
+// Handle cors through middleware
+func corsMiddleware(next http.Handler) http.Handler {
+	handleCors := func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-type, Mahmud")
+
+		next.ServeHTTP(w, r)
+	}
+	handler := http.HandlerFunc(handleCors)
+	return handler
 }
